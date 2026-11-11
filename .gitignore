@@ -1,2 +1,19 @@
+
+# Environment secrets
+.env
+.env.*
+
+# Dependencies
+node_modules/
+
+# Local database and uploaded media
 data/*.db*
-node_modules
+data/uploads/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Backups
+*.bak
+*.backup
