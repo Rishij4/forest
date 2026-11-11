@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Forest Department, Kothagudem District – Incident Dashboard</title>
+<style>
+:root{--bg:#f3f5f2;--card:#fff;--tx:#1d2a22;--mu:#66756b;--bd:#dfe5e0;--ac:#1f6f4a;--crit:#c62828;--high:#e07b00;--med:#b59a00;--low:#4a7c59;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1512;--card:#182119;--tx:#e6efe8;--mu:#93a498;--bd:#2a382d;--ac:#4cc38a;--crit:#ef5350;--high:#ffa726;--med:#e6c84a;--low:#7fbf90}}
+:root[data-theme="dark"]{--bg:#0f1512;--card:#182119;--tx:#e6efe8;--mu:#93a498;--bd:#2a382d;--ac:#4cc38a;--crit:#ef5350;--high:#ffa726;--med:#e6c84a;--low:#7fbf90}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--bd);background:var(--card)}
+.huser{display:flex;gap:10px;align-items:center;margin-left:auto;flex-shrink:0}
+.hacts{display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-basis:100%}
+h1{font-size:18px;margin:0}small,.mu{color:var(--mu)}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ac);animation:p 2s infinite}
+@keyframes p{50%{opacity:.3}}
+button,select,input{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:7px 10px}
+button{cursor:pointer}button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.45;cursor:not-allowed}
+main{padding:16px 20px;max-width:1500px;margin:auto}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;cursor:pointer;text-align:left}
+.kpi.on{outline:2px solid var(--ac)}
+.kpi b{display:block;font-size:28px;line-height:1.1}.kpi span{font-size:12px;color:var(--mu)}
+.kpi.c b{color:var(--crit)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 10px}.bar input{flex:1;min-width:180px}.bar input[type=checkbox]{flex:none;min-width:0}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--bd);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:1100px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--bd);vertical-align:top}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--mu);position:sticky;top:0;background:var(--card)}
+tr:last-child td{border-bottom:0}
+.tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;border:1px solid currentColor;white-space:nowrap}
+.Critical{color:var(--crit)}.High{color:var(--high)}.Medium{color:var(--med)}.Low{color:var(--low)}
+.Open{color:var(--crit)}.Under-Action{color:var(--high)}.Resolved{color:var(--low)}
+a{color:var(--ac);text-decoration:none;margin-right:8px}a:hover{text-decoration:underline}
+.new{animation:f 3s}@keyframes f{from{background:color-mix(in srgb,var(--ac) 25%,transparent)}}
+.panel{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;margin-bottom:12px}.panel>b{font-size:13px}#mand{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:6px 18px;margin-top:8px}.m{display:grid;grid-template-columns:150px 1fr 26px;gap:8px;align-items:center;font-size:12px;cursor:pointer}.m i{display:block;height:8px;border-radius:4px;background:var(--ac)}.m.on span{font-weight:700}.empty{padding:30px;text-align:center;color:var(--mu)}
+footer{padding:14px 20px;color:var(--mu);font-size:12px}
+dialog{border:1px solid var(--bd);border-radius:12px;background:var(--card);color:var(--tx);width:min(560px,94vw);padding:16px}
+dialog.wide{width:min(980px,96vw)}dialog::backdrop{background:rgba(0,0,0,.45)}
+.fg{display:grid;gap:8px}.fg label{font-size:12px;color:var(--mu)}
+textarea{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:7px 10px;min-height:90px}
+.err{color:var(--crit);font-size:12px}
+fieldset.loc{border:1px solid var(--bd);border-radius:8px;padding:8px 10px;margin:0}fieldset.loc legend{font-size:12px;color:var(--mu)}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:10px;max-width:92vw;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50}#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>🌲 Forest Department, Kothagudem District</h1><small style="display:block;font-weight:600">Bhadradri Kothagudem · Incident Monitoring Dashboard</small><small id="mode"></small></div>
+  <div class="huser"><small id="who"></small><button id="lo">Log out</button></div>
+  <div class="hacts">
+    <span class="live"><i class="dot"></i><span id="upd">Loading…</span></span>
+    <button id="rf">Refresh now</button><button id="cb">Complaint Officer</button><button id="fbk">Feedback inbox</button><button id="bkb">Bookings<span id="bkcnt"></span></button><button id="ob" hidden>Officers</button><span id="pend" class="live" hidden style="color:var(--high)"><b id="pendn"></b>&nbsp;report(s) waiting to upload <button id="syncb">Sync now</button><small id="pendmsg"></small></span><a href="/api/export/complaints.csv">Complaints CSV</a>
+  </div>
+</header>
+<main>
+  <section class="kpis" id="kpis"></section>
+  <div class="bar">
+    <input id="q" placeholder="Search ID, location, officer, action…">
+    <select id="fs"><option value="">All statuses</option><option>Open</option><option>Under Action</option><option>Resolved</option></select>
+    <select id="fv"><option value="">All severities</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
+    <select id="ft"><option value="">All sources</option><option>Incident</option><option>Complaint</option><option>Camera Alert</option></select>
+    <select id="fm"><option value="">All divisions</option></select>
+  </div>
+  <div class="panel"><b>Email alerts</b> <small id="astat"></small>
+    <div class="bar" style="margin:8px 0 6px"><input id="ae0" type="email" placeholder="Alert email 1"><input id="ae1" type="email" placeholder="Alert email 2"><input id="ae2" type="email" placeholder="Alert email 3"><select id="amin"><option value="High">High &amp; Critical</option><option value="Critical">Critical only</option></select><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="aon" style="padding:0"> Alerts on</label><button id="asave">Save</button></div>
+    <div id="alog" class="mu" style="font-size:12px"></div></div>
+  <div class="panel"><b>Active cases by division</b><div id="mand"></div></div>
+  <div class="wrap"><table>
+    <thead><tr><th>ID</th><th>Time</th><th>Source</th><th>Category</th><th>Severity</th><th>Status</th><th>Division</th><th>Assigned officer</th><th>Action taken</th><th>Media</th><th>Map</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+  <div class="panel" id="bkpanel" style="margin-top:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <span><b>Customer bookings</b> <small id="bkstat" class="mu"></small></span>
+      <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select id="bkf"><option value="">All bookings</option><option>Pending</option><option>Confirmed</option><option>Cancelled</option></select>
+        <a href="/api/export/bookings.csv">Bookings CSV</a>
+      </span>
+    </div>
+    <div class="wrap"><table style="min-width:960px">
+      <thead><tr><th>Ref</th><th>Booked on</th><th>Service</th><th>Place</th><th>Visit date</th><th>Visitors</th><th>Customer</th><th>Payment</th><th>Status</th><th>Note</th></tr></thead>
+      <tbody id="bk_rows"></tbody>
+    </table></div>
+  </div>
+</main>
+<footer>Auto-refreshes every <span id="ivl"></span>s · Next refresh in <span id="cd"></span>s</footer>
+
+<dialog id="cdlg"><form id="cform" class="fg">
+  <h3 style="margin:0">Register a complaint</h3>
+  <label>Complainant name *<input id="c_name" required maxlength="100" style="width:100%"></label>
+  <label>Phone<input id="c_phone" type="tel" maxlength="20" style="width:100%"></label>
+  <label>Category<select id="c_cat" style="width:100%"><option>Timber smuggling</option><option>Wildlife poaching</option><option>Illegal felling</option><option>Forest fire</option><option>Human-wildlife conflict</option><option>Encroachment</option><option>Sand/mineral smuggling</option><option>Snare found</option><option>Other</option></select></label>
+  <label>Division<select id="c_div" style="width:100%"><option>Kinnerasani Division</option><option>Manuguru Division</option><option>Yellandu Division</option><option>Paloncha Division</option><option>Bhadrachalam Division</option><option>Kothagudem Division</option></select></label>
+  <label>Severity<select id="c_sev" style="width:100%"><option>Low</option><option selected>Medium</option><option>High</option><option>Critical</option></select></label>
+  <fieldset class="loc"><legend>Location (GPS works without internet)</legend>
+    <div style="display:flex;gap:8px"><input id="c_lat" inputmode="decimal" placeholder="Latitude" style="flex:1;min-width:0"><input id="c_lng" inputmode="decimal" placeholder="Longitude" style="flex:1;min-width:0"></div>
+    <div style="margin-top:6px"><button type="button" id="c_gps">Use my current location</button> <small id="c_gpsmsg" class="mu"></small></div>
+  </fieldset>
+  <label>Photos<input id="c_photos" type="file" accept="image/*" multiple style="width:100%"></label>
+  <label>Video (max 60 MB)<input id="c_video" type="file" accept="video/*" style="width:100%"></label>
+  <label>Complaint details *<textarea id="c_desc" required maxlength="3000" style="width:100%"></textarea></label>
+  <div class="err" id="c_err" hidden></div>
+  <div><button type="submit" id="c_ok">Submit complaint</button> <button type="button" id="c_x">Cancel</button></div>
+</form></dialog>
+<dialog id="fdlg" class="wide"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px">
+  <h3 style="margin:0">Public feedback</h3><span><a href="/api/export/feedback.csv">Download CSV</a><button id="f_x">Close</button></span></div>
+  <div class="wrap"><table style="min-width:760px"><thead><tr><th>Ref</th><th>Date</th><th>Category</th><th>Name</th><th>Contact</th><th>Place</th><th>Message</th></tr></thead><tbody id="f_rows"></tbody></table></div>
+</dialog>
+<dialog id="odlg" class="wide"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px">
+  <h3 style="margin:0">Officer accounts</h3><button id="o_x">Close</button></div>
+  <p class="mu">Keep at least one DFO account. Only a DFO can sign in here and add officers again; the last DFO and your own account cannot be removed.</p>
+  <div class="wrap"><table style="min-width:620px"><thead><tr><th>Officer ID</th><th>Name</th><th>Role</th><th>Actions</th></tr></thead><tbody id="o_rows"></tbody></table></div>
+  <form id="oform" class="fg" style="margin-top:14px"><b>Add a new officer</b>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px">
+      <input id="o_id" placeholder="Officer ID (e.g. FRO102)" required maxlength="20">
+      <input id="o_name" placeholder="Full name" required maxlength="100">
+      <select id="o_role"><option>FRO</option><option>FSO</option><option>FBO</option><option>FDO</option><option>DFO</option><option>Other</option></select>
+      <input id="o_pw" placeholder="Password (min 8)" required minlength="8" maxlength="100">
+    </div>
+    <div><button type="button" id="o_gen">Generate password</button> <button type="submit">Create officer</button></div>
+    <div id="o_msg" class="mu"></div>
+  </form>
+</dialog>
+<div id="toast" role="status"></div>
+<script>
+/* ---------- CONFIG ----------
+   API_URL: set to your backend endpoint (same origin) returning a JSON array of records:
+   { id, timestamp (ISO), source: "Incident"|"Complaint"|"Camera Alert", category, severity: "Low|Medium|High|Critical",
+     status: "Open|Under Action|Resolved", location, lat, lng, officer, action, photo, video }
+   Leave empty to run with simulated demo data. */
+const CONFIG={API_URL:"/api/records",REFRESH_SECONDS:30,
+ /* ALERT_API_URL: your server endpoint that sends the email. The dashboard POSTs
+    {to:[...], subject, body, record} as JSON. Leave empty to use "Open in email app" links. */
+ ALERT_API_URL:"",
+ /* Default alert recipients (3). Can also be edited on the page. */
+ ALERT_EMAILS:["dfobhadradri@gmail.com","fdowlmkinnerasani@gmail.com",""]};
+
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const CATS=["Timber smuggling","Wildlife poaching","Illegal felling","Forest fire","Human-wildlife conflict","Encroachment","Sand/mineral smuggling","Snare found"];
+const LOCS=[["Kinnerasani Division",17.70,80.78],["Manuguru Division",17.93,80.76],["Yellandu Division",17.60,80.33],["Paloncha Division",17.60,80.70],["Bhadrachalam Division",17.67,80.89],["Kothagudem Division",17.55,80.62]];
+const OFF=["R. Srinivas (FRO)","K. Lakshmi (FSO)","M. Venkat (DFO)","A. Rao (FBO)","S. Fatima (FRO)"];
+const ACT=["Patrol team dispatched","Vehicle seized, FIR registered","Under investigation","Notice issued","Awaiting field verification","Suspects detained","Area cordoned; night patrol set"];
+let data=[],bookings=[],filterKpi="",seq=1000,lastIds=new Set(),cd=CONFIG.REFRESH_SECONDS;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function mk(minsAgo,src){const l=pick(LOCS),ts=new Date(Date.now()-minsAgo*60000);
+ return{id:"INC-"+(++seq),timestamp:ts.toISOString(),source:src||pick(["Incident","Incident","Complaint","Camera Alert"]),category:pick(CATS),
+ severity:pick(["Low","Medium","Medium","High","Critical"]),status:pick(["Open","Under Action","Under Action","Resolved"]),location:l[0],lat:+(l[1]+Math.random()*.02).toFixed(5),lng:+(l[2]+Math.random()*.02).toFixed(5),
+ officer:pick(OFF),action:pick(ACT),photo:Math.random()>.3?"#":"",video:Math.random()>.6?"#":""}}
+function demo(){if(!data.length){return Array.from({length:26},(_,i)=>mk(i*55+Math.random()*30)).sort((a,b)=>b.timestamp.localeCompare(a.timestamp))}
+ const d=data.slice();if(Math.random()>.4)d.unshift(mk(0,pick(["Camera Alert","Complaint","Incident"])));
+ if(d.length>60)d.length=60;const r=pick(d);if(r.status==="Open")r.status="Under Action";return d}
+async function load(){
+ if(CONFIG.API_URL){const r=await fetch(CONFIG.API_URL,{cache:"no-store"});if(r.status===401){location.replace("/#dashboard");return[]}if(!r.ok)throw new Error(r.status);return r.json()}
+ return demo()}
+const A={emails:CONFIG.ALERT_EMAILS.slice(0,3),min:"High",on:true},seen=new Set(),alog=[];let firstLoad=true;
+try{Object.assign(A,JSON.parse(localStorage.getItem("alertCfg")||"{}"))}catch(e){}
+if(!Array.isArray(A.emails))A.emails=["","",""];A.emails=[0,1,2].map(i=>A.emails[i]||CONFIG.ALERT_EMAILS[i]||"");
+const sevOk=r=>A.min==="Critical"?r.severity==="Critical":(r.severity==="High"||r.severity==="Critical");
+const recips=()=>A.emails.map(x=>x.trim()).filter(x=>/^\S+@\S+\.\S+$/.test(x));
+function fire(r){
+ const subject=`[${r.severity.toUpperCase()}] ${r.category} - ${r.location} (${r.id})`;
+ const body=`Forest Department, Kothagudem District - Incident Alert\n\nID: ${r.id}\nSeverity: ${r.severity}\nSource: ${r.source}\nCategory: ${r.category}\nDivision: ${r.location}\nStatus: ${r.status}\nAssigned officer: ${r.officer}\nAction taken: ${r.action}\nTime: ${new Date(r.timestamp).toLocaleString()}\nMap: https://www.google.com/maps?q=${r.lat},${r.lng}`+(r.photo&&r.photo!=="#"?`\nPhoto: ${r.photo}`:"")+(r.video&&r.video!=="#"?`\nVideo: ${r.video}`:"");
+ const to=recips(),e={r,subject,body,to,state:to.length?"":"add recipients"};alog.unshift(e);if(alog.length>8)alog.pop();
+ if(to.length&&CONFIG.ALERT_API_URL){e.state="sending";
+  fetch(CONFIG.ALERT_API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({to,subject,body,record:r})})
+   .then(x=>{e.state=x.ok?"sent":"failed"}).catch(()=>{e.state="failed"}).finally(renderAlerts)}
+ else if(to.length)e.state="ready - open in email app"}
+function checkAlerts(){
+ const fresh=data.filter(r=>!seen.has(r.id));data.forEach(r=>seen.add(r.id));
+ if(firstLoad){firstLoad=false;return}
+ if(A.on)fresh.filter(r=>r.status!=="Resolved"&&sevOk(r)).forEach(fire)}
+function renderAlerts(){
+ document.getElementById("astat").textContent=(A.on?"ON":"OFF")+" - "+(recips().length?recips().length+" recipient(s)":"no recipients")+(CONFIG.ALERT_API_URL?" - server delivery":" - email-app mode");
+ document.getElementById("alog").innerHTML=alog.length?alog.map(e=>`<div>${new Date().toLocaleTimeString()} - <b>${esc(e.subject)}</b> - ${esc(e.state)}${e.to.length&&!CONFIG.ALERT_API_URL?` - <a href="mailto:${esc(e.to.join(","))}?subject=${encodeURIComponent(e.subject)}&body=${encodeURIComponent(e.body)}">Send</a>`:""}</div>`).join(""):"New High/Critical cases will appear here and be emailed to the recipients above."}
+const $=id=>document.getElementById(id);
+[0,1,2].forEach(i=>$("ae"+i).value=A.emails[i]);$("amin").value=A.min;$("aon").checked=A.on;
+$("asave").onclick=()=>{A.emails=[0,1,2].map(i=>$("ae"+i).value.trim());A.min=$("amin").value;A.on=$("aon").checked;
+ try{localStorage.setItem("alertCfg",JSON.stringify(A))}catch(e){}renderAlerts()};
+async function refresh(){
+ try{data=await load();checkAlerts();document.getElementById("upd").textContent="Updated "+new Date().toLocaleTimeString()}
+ catch(e){document.getElementById("upd").textContent="Refresh failed – showing last data"}
+ cd=CONFIG.REFRESH_SECONDS;render();renderAlerts();loadBookings()}
+
+const isToday=t=>new Date(t).toDateString()===new Date().toDateString();
+const KPIS=[
+ ["today","Today's incidents",r=>isToday(r.timestamp)&&r.source==="Incident"],
+ ["open","Open / Under action",r=>r.status!=="Resolved"],
+ ["smug","Smuggling / Poaching",r=>/smuggl|poach/i.test(r.category)],
+ ["crit","High / Critical alerts",r=>r.severity==="High"||r.severity==="Critical"],
+ ["comp","Complaints",r=>r.source==="Complaint"],
+ ["cam","Camera alerts",r=>r.source==="Camera Alert"]];
+function render(){
+ document.getElementById("kpis").innerHTML=KPIS.map(([k,l,f])=>`<button class="kpi ${k==="crit"?"c":""} ${filterKpi===k?"on":""}" data-k="${k}"><b>${data.filter(f).length}</b><span>${l}</span></button>`).join("");
+ const q=document.getElementById("q").value.toLowerCase(),s=fs.value,v=fv.value,t=ft.value,kf=KPIS.find(x=>x[0]===filterKpi);
+ const rows=data.filter(r=>(!kf||kf[2](r))&&(!s||r.status===s)&&(!v||r.severity===v)&&(!t||r.source===t)&&(!fm.value||r.location===fm.value)&&(!q||[r.id,r.location,r.officer,r.action,r.category].join(" ").toLowerCase().includes(q)));
+ const ids=new Set(data.map(r=>r.id));
+ const cnt={};data.filter(r=>r.status!=="Resolved").forEach(r=>cnt[r.location]=(cnt[r.location]||0)+1);
+ const mx=Math.max(1,...Object.values(cnt));
+ document.getElementById("mand").innerHTML=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).map(([k,n])=>`<div class="m ${fm.value===k?"on":""}" data-l="${esc(k)}"><span>${esc(k)}</span><i style="width:${n/mx*100}%"></i><b>${n}</b></div>`).join("")||'<span class="mu">No active cases</span>';
+ const locs=[...new Set(data.map(r=>r.location))].sort();
+ if(fm.options.length-1!==locs.length){const cur=fm.value;fm.innerHTML='<option value="">All divisions</option>'+locs.map(l=>`<option ${l===cur?"selected":""}>${esc(l)}</option>`).join("")}
+ document.getElementById("rows").innerHTML=rows.length?rows.map(r=>{
+  const fresh=lastIds.size&&!lastIds.has(r.id)?"new":"";
+  const media=(r.media&&r.media.length?r.media.map((m,i)=>`<a href="${esc(m.url)}" target="_blank" rel="noopener">${m.kind==="video"?"Video":"Photo"} ${i+1}</a>`).join(""):"")||'<span class="mu">—</span>';
+  const map=(r.lat!=null&&r.lng!=null)?`<a href="https://www.google.com/maps?q=${encodeURIComponent(r.lat+","+r.lng)}" target="_blank" rel="noopener">Open map</a>${r.gps?`<br><small class="mu">GPS${r.accuracy!=null?" ±"+Math.round(r.accuracy)+" m":""}</small>`:`<br><small class="mu">division centre</small>`}`:'<span class="mu">—</span>';
+  return `<tr class="${fresh}"><td><b>${esc(r.id)}</b></td><td>${new Date(r.timestamp).toLocaleString([], {day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}</td><td>${esc(r.source)}</td><td>${esc(r.category)}${r.details?`<br><small class="mu">${esc(r.details)}</small>`:""}</td>
+  <td><span class="tag ${esc(r.severity)}">${esc(r.severity)}</span></td><td>${r.source==="Complaint"?`<select class="stsel" data-ref="${esc(r.id)}">${["Open","Under Action","Resolved"].map(s=>`<option ${s===r.status?"selected":""}>${s}</option>`).join("")}</select>`:`<span class="tag ${esc(r.status).replace(" ","-")}">${esc(r.status)}</span>`}</td>
+  <td>${esc(r.location)}</td><td>${esc(r.officer)}</td><td>${esc(r.action)}</td><td>${media}</td><td>${map}</td></tr>`}).join(""):'<tr><td colspan="11" class="empty">No records match the current filters.</td></tr>';
+ lastIds=ids}
+document.getElementById("kpis").addEventListener("click",e=>{const b=e.target.closest(".kpi");if(!b)return;filterKpi=filterKpi===b.dataset.k?"":b.dataset.k;render()});
+["q","fs","fv","ft","fm"].forEach(id=>document.getElementById(id).addEventListener("input",render));
+document.getElementById("rf").onclick=refresh;
+document.getElementById("mand").addEventListener("click",e=>{const m=e.target.closest(".m");if(!m)return;fm.value=fm.value===m.dataset.l?"":m.dataset.l;render()});
+document.getElementById("ivl").textContent=CONFIG.REFRESH_SECONDS;
+document.getElementById("mode").textContent=CONFIG.API_URL?"Live data feed":"Demo mode – simulated district data (set CONFIG.API_URL to connect your backend)";
+setInterval(()=>{cd--;document.getElementById("cd").textContent=Math.max(cd,0);if(cd<=0)refresh()},1000);
+refresh();
+
+/* ---------- session, offline-first complaints, feedback inbox, officers ---------- */
+const toast=(t,ms=7000)=>{const e=$("toast");e.textContent=t;e.className="show";clearTimeout(toast.t);toast.t=setTimeout(()=>e.className="",ms)};
+let ME=null;
+fetch("/api/me").then(r=>{if(r.status===401){location.replace("/#dashboard");throw 0}return r.json()})
+  .then(m=>{ME=m;$("who").textContent=m.name+" ("+m.officerId+")";if(m.admin)$("ob").hidden=false;
+    /* keep a copy of this page on the device so it opens with no internet */
+    if(window.caches)caches.open("forest-shell-v3").then(c=>fetch("/forest-dashboard.html",{cache:"no-store"}).then(r=>{if(r.ok&&!r.redirected)c.put("/forest-dashboard.html",r)})).catch(()=>{})}).catch(()=>{});
+if("serviceWorker" in navigator&&isSecureContext)navigator.serviceWorker.register("/sw.js").catch(()=>{});
+$("lo").onclick=()=>{(window.caches?caches.delete("forest-shell-v3"):Promise.resolve()).catch(()=>{});
+  fetch("/api/logout",{method:"POST"}).finally(()=>location.href="/")};
+
+/* show last known records when there is no signal */
+{const _load=load;load=async()=>{try{const d=await _load();try{localStorage.setItem("recCache",JSON.stringify(d))}catch(e){}return d}
+  catch(e){let c=null;try{c=JSON.parse(localStorage.getItem("recCache")||"null")}catch(x){}if(c)return c;throw e}}}
+
+/* ----- on-device outbox (IndexedDB) ----- */
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open("forest-field",1);r.onupgradeneeded=()=>r.result.createObjectStore("outbox",{keyPath:"id",autoIncrement:true});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const tx=async(mode,fn)=>{const d=await idb();return new Promise((res,rej)=>{const t=d.transaction("outbox",mode),q=fn(t.objectStore("outbox"));t.oncomplete=()=>res(q&&q.result);t.onerror=()=>rej(t.error)})};
+const ob={all:()=>tx("readonly",s=>s.getAll()),put:o=>tx("readwrite",s=>s.put(o)),del:id=>tx("readwrite",s=>s.delete(id))};
+class NetErr extends Error{}class AuthErr extends Error{}class BadErr extends Error{}
+async function call(url,opt){let r;try{r=await fetch(url,opt)}catch(e){throw new NetErr("offline")}
+  if(r.status===401)throw new AuthErr("login");
+  if(r.status>=500||r.status===429)throw new NetErr("server "+r.status);
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw new BadErr(j.error||"Rejected ("+r.status+")");return j}
+async function sendItem(it){
+  if(!it.ref){const j=await call("/api/complaints",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(it.body)});it.ref=j.ref;if(it.id)await ob.put(it)}
+  for(const f of it.files){if(f.done)continue;
+    await call("/api/complaints/"+encodeURIComponent(it.ref)+"/media",{method:"POST",headers:{"Content-Type":f.type,"X-Media-Id":f.mid,"X-Filename":encodeURIComponent(f.name)},body:f.blob});
+    f.done=true;if(it.id)await ob.put(it)}}
+async function pending(){let a=[];try{a=await ob.all()}catch(e){}$("pend").hidden=!a.length;$("pendn").textContent=a.length;return a}
+let syncing=false;
+async function syncAll(){if(syncing)return;syncing=true;let sent=0;
+  try{for(const it of await ob.all()){if(it.failed)continue;
+    try{await sendItem(it);await ob.del(it.id);sent++}
+    catch(e){if(e instanceof BadErr){it.failed=e.message;await ob.put(it);continue}
+      if(e instanceof AuthErr)$("pendmsg").textContent=" Log in again to sync.";break}}}
+  catch(e){}finally{syncing=false;await pending();if(sent){toast(sent+" saved report(s) uploaded.");refresh()}}}
+$("syncb").onclick=syncAll;addEventListener("online",syncAll);setInterval(()=>{if(navigator.onLine)syncAll()},20000);
+pending().then(a=>{if(a.length&&navigator.onLine)syncAll()});
+
+/* ----- GPS (works offline: uses the phone's GPS chip) ----- */
+let gpsW=null,gpsT=null,fix=null;
+const stopGps=()=>{if(gpsW!=null)navigator.geolocation.clearWatch(gpsW);gpsW=null;clearTimeout(gpsT)};
+function startGps(){const msg=$("c_gpsmsg");stopGps();
+  if(!("geolocation" in navigator)){msg.textContent="GPS not available. Type the coordinates.";return}
+  if(!isSecureContext){msg.textContent="GPS needs HTTPS (or localhost). Type the coordinates.";return}
+  fix=null;msg.textContent="Searching for GPS... stay in the open.";
+  gpsW=navigator.geolocation.watchPosition(p=>{const c=p.coords;
+    if(!fix||c.accuracy<fix.accuracy){fix={lat:c.latitude,lng:c.longitude,accuracy:c.accuracy,t:p.timestamp};$("c_lat").value=c.latitude.toFixed(6);$("c_lng").value=c.longitude.toFixed(6)}
+    msg.textContent="Location accuracy +/-"+Math.round(fix.accuracy)+" m"+(fix.accuracy<=25?" (good)":" (improving...)");
+    if(c.accuracy<=15)stopGps()},
+   err=>{if(err.code===1){msg.textContent="Location permission denied. Allow it in browser settings or type coordinates.";stopGps()}else msg.textContent=fix?msg.textContent:"No GPS fix yet. Move to open sky, or type coordinates."},
+   {enableHighAccuracy:true,maximumAge:0,timeout:60000});
+  gpsT=setTimeout(stopGps,120000)}
+$("c_gps").onclick=startGps;
+
+/* ----- complaint form ----- */
+$("cb").onclick=()=>{$("c_err").hidden=true;$("cdlg").showModal();if(!$("c_lat").value)startGps()};
+$("c_x").onclick=()=>{stopGps();$("cdlg").close()};
+$("cdlg").addEventListener("close",stopGps);
+const OKTYPES=["image/jpeg","image/png","image/webp","video/mp4","video/webm","video/quicktime"];
+async function shrink(file){if(!file.type.startsWith("image/")||file.type==="image/gif")return file;
+  try{const b=await createImageBitmap(file),s=Math.min(1,1600/Math.max(b.width,b.height));
+    const cv=document.createElement("canvas");cv.width=Math.round(b.width*s);cv.height=Math.round(b.height*s);cv.getContext("2d").drawImage(b,0,0,cv.width,cv.height);
+    const blob=await new Promise(r=>cv.toBlob(r,"image/jpeg",.8));
+    return blob&&blob.size<file.size?new File([blob],file.name.replace(/\.\w+$/,"")+".jpg",{type:"image/jpeg"}):file}catch(e){return file}}
+$("cform").onsubmit=async e=>{e.preventDefault();const btn=$("c_ok"),er=$("c_err");er.hidden=true;btn.disabled=true;
+  const fail=t=>{er.textContent=t;er.hidden=false};
+  try{
+    const la=$("c_lat").value.trim(),lo=$("c_lng").value.trim();
+    if(!!la!==!!lo)return fail("Enter both latitude and longitude, or leave both empty.");
+    const lat=la?Number(la):null,lng=lo?Number(lo):null;
+    if(la&&(!(Math.abs(lat)<=90)||!(Math.abs(lng)<=180)))return fail("Latitude must be -90 to 90 and longitude -180 to 180.");
+    const raw=[...$("c_photos").files,...$("c_video").files],files=[];
+    for(const f of raw){const g=await shrink(f);
+      if(!OKTYPES.includes(g.type))return fail("Unsupported file: "+f.name+" (use JPG, PNG, WebP, MP4, WebM or MOV).");
+      if(g.type.startsWith("video/")&&g.size>60e6)return fail(f.name+" is larger than 60 MB. Record a shorter clip.");
+      files.push({blob:g,name:g.name,type:g.type,mid:crypto.randomUUID(),done:false})}
+    const useFix=fix&&la&&Math.abs(fix.lat-lat)<1e-5&&Math.abs(fix.lng-lng)<1e-5;
+    const it={body:{clientId:crypto.randomUUID(),name:$("c_name").value,phone:$("c_phone").value,category:$("c_cat").value,division:$("c_div").value,severity:$("c_sev").value,
+      details:$("c_desc").value,lat,lng,accuracy:useFix?fix.accuracy:null,capturedAt:useFix?new Date(fix.t).toISOString():new Date().toISOString()},files};
+    let msg;
+    try{await sendItem(it);msg="Complaint saved: "+it.ref}
+    catch(err){if(err instanceof BadErr)return fail(err.message);
+      it.id=await ob.put(it);
+      msg=err instanceof AuthErr?"Session expired. The report is saved on this device. Log in again to upload it."
+        :"No internet. The report is saved on this device and will upload automatically when you are online."}
+    stopGps();$("cform").reset();fix=null;$("cdlg").close();toast(msg);pending();refresh();
+  }catch(x){fail("Could not save: "+(x&&x.message||x))}finally{btn.disabled=false}};
+
+/* status change */
+document.getElementById("rows").addEventListener("change",async e=>{
+  const s=e.target.closest(".stsel");if(!s)return;
+  const note=prompt("Action taken (optional):","");
+  try{await call("/api/complaints/"+encodeURIComponent(s.dataset.ref),{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:s.value,action:note||""})})}
+  catch(err){toast(err instanceof NetErr?"No internet - status not changed.":"Could not change status: "+err.message)}
+  refresh()});
+
+/* customer bookings */
+function renderBookings(){
+  const f=$("bkf").value, pend=bookings.filter(b=>b.status==="Pending").length;
+  $("bkcnt").textContent=pend?` (${pend})`:"";
+  $("bkstat").textContent=`${bookings.length} total · ${pend} pending`;
+  const list=f?bookings.filter(b=>b.status===f):bookings;
+  $("bk_rows").innerHTML=list.length?list.map(b=>{
+    const vis=(b.adults||0)+(b.children||0), contact=[b.phone,b.email].filter(Boolean).map(esc).join("<br>");
+    const pay=`\u20B9${Number(b.total_amount||0).toLocaleString("en-IN")} · ${esc(b.payment_status)}${b.payment_method?`<br><small class="mu">${esc(b.payment_method)}${b.payment_ref?" · "+esc(b.payment_ref):""}</small>`:""}`;
+    return `<tr><td><b>${esc(b.ref)}</b></td><td>${new Date(b.created_at).toLocaleString([],{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}</td><td>${esc(b.service)}</td><td>${esc(b.place)}</td><td>${esc(b.visit_date)}</td><td>${vis} (${b.adults}A${b.children?", "+b.children+"C":""})</td><td><b>${esc(b.name)}</b>${contact?`<br><small class="mu">${contact}</small>`:""}</td><td>${pay}</td><td><select class="bkst" data-ref="${esc(b.ref)}">${["Pending","Confirmed","Cancelled"].map(s=>`<option ${s===b.status?"selected":""}>${s}</option>`).join("")}</select></td><td>${b.officer_note?esc(b.officer_note):'<span class="mu">—</span>'}</td></tr>`;
+  }).join(""):'<tr><td colspan="10" class="empty">No customer bookings yet.</td></tr>';
+}
+async function loadBookings(){
+  const r=await fetch("/api/bookings",{cache:"no-store"}).catch(()=>null);if(!r)return;
+  if(r.status===401){location.replace("/#dashboard");return}
+  if(!r.ok)return;
+  bookings=await r.json();renderBookings();
+}
+$("bkf").addEventListener("input",renderBookings);
+$("bkb").onclick=()=>{$("bkpanel").scrollIntoView({behavior:"smooth",block:"start"});loadBookings()};
+$("bk_rows").addEventListener("change",async e=>{
+  const s=e.target.closest(".bkst");if(!s)return;
+  const cur=bookings.find(b=>b.ref===s.dataset.ref);
+  const note=prompt("Department note for "+s.dataset.ref+" (optional):",cur&&cur.officer_note||"");
+  if(note===null){renderBookings();return}
+  try{await call("/api/bookings/"+encodeURIComponent(s.dataset.ref),{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:s.value,note})});toast("Booking "+s.dataset.ref+" updated to "+s.value)}
+  catch(err){toast(err instanceof NetErr?"No internet - status not changed.":"Could not update booking: "+err.message)}
+  loadBookings();
+});
+
+/* feedback inbox */
+$("fbk").onclick=async()=>{
+  const r=await fetch("/api/feedback").catch(()=>null);if(!r)return toast("No internet.");
+  if(r.status===401){location.replace("/#dashboard");return}
+  const rows=await r.json();
+  $("f_rows").innerHTML=rows.length?rows.map(f=>`<tr><td>${esc(f.ref)}</td><td>${new Date(f.created_at).toLocaleString()}</td><td>${esc(f.category)}</td><td>${esc(f.name)}</td><td>${esc([f.phone,f.email].filter(Boolean).join(" / "))}</td><td>${esc(f.place)}</td><td>${esc(f.message)}</td></tr>`).join(""):'<tr><td colspan="7" class="mu">No feedback yet.</td></tr>';
+  $("fdlg").showModal()};
+$("f_x").onclick=()=>$("fdlg").close();
+
+/* officer management (DFO only) */
+async function loadOfficers(){const r=await fetch("/api/officers");if(!r.ok)return;
+  const officers=await r.json(), dfoCount=officers.filter(o=>o.role==="DFO").length;
+  $("o_rows").innerHTML=officers.length?officers.map(o=>{const own=ME&&o.officer_id===ME.officerId, protectedDfo=o.role==="DFO"&&dfoCount<=1, note=own?" (signed in)":protectedDfo?" (last DFO)":"";
+    return `<tr><td><b>${esc(o.officer_id)}</b>${note?`<small class="mu">${note}</small>`:""}</td><td>${esc(o.name)}</td><td>${esc(o.role)}</td><td><button data-reset="${esc(o.officer_id)}">Reset password</button> <button data-del="${esc(o.officer_id)}" ${own||protectedDfo?"disabled":""} title="${own?"You cannot remove your signed-in account":protectedDfo?"Keep at least one DFO account":""}">Remove</button></td></tr>`}).join(""):'<tr><td colspan="4">No officer accounts found. Restart the server to recreate the initial DFO account; its temporary password is printed in the server console.</td></tr>'}
+$("ob").onclick=()=>{$("o_msg").textContent="";loadOfficers();$("odlg").showModal()};
+$("o_x").onclick=()=>$("odlg").close();
+$("o_gen").onclick=()=>{const a=new Uint8Array(12);crypto.getRandomValues(a);$("o_pw").value=[...a].map(n=>"ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"[n%54]).join("")};
+$("oform").onsubmit=async e=>{e.preventDefault();const id=$("o_id").value.trim().toUpperCase(),pw=$("o_pw").value;
+  try{await call("/api/officers",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({officerId:id,name:$("o_name").value,role:$("o_role").value,password:pw})});
+    $("o_msg").textContent="Created. Give the officer these login details now (the password is not shown again) - ID: "+id+"   Password: "+pw;
+    $("oform").reset();loadOfficers()}
+  catch(err){$("o_msg").textContent="Error: "+(err.message==="offline"?"no internet":err.message)}};
+$("o_rows").onclick=async e=>{const b=e.target.closest("button");if(!b)return;
+  try{if(b.dataset.reset){const pw=prompt("New password for "+b.dataset.reset+" (min 8 characters):");if(!pw)return;
+      await call("/api/officers/"+encodeURIComponent(b.dataset.reset),{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:pw})});
+      $("o_msg").textContent="Password changed for "+b.dataset.reset+". Share it with the officer: "+pw}
+    else if(b.dataset.del){if(!confirm("Remove officer "+b.dataset.del+"? They will be logged out."))return;
+      await call("/api/officers/"+encodeURIComponent(b.dataset.del),{method:"DELETE"});$("o_msg").textContent="Removed "+b.dataset.del;loadOfficers()}}
+  catch(err){$("o_msg").textContent="Error: "+err.message}};
+</script>
+</body>
+</html>

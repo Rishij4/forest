@@ -1,0 +1,11 @@
+{
+  "name": "forest-portal",
+  "version": "1.0.0",
+  "description": "Bhadradri Kothagudem Forest & Tourism site with officer Command Control dashboard",
+  "private": true,
+  "engines": { "node": ">=22.5" },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js",
+    "create-officer": "node --disable-warning=ExperimentalWarning scripts/create-officer.js"
+  }
+}
